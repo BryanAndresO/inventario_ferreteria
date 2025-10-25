@@ -1,60 +1,69 @@
-﻿@model inventario_ferreteria.Models.Articulo
+@model inventario_ferreteria.Models.Articulo
 
 @{
-    ViewData["Title"] = "Details";
+    ViewData["Title"] = "Detalles del Artículo";
 }
 
-<h1>Details</h1>
+<div class="container mt-4">
+    <div class="card shadow-lg border-0 rounded-4">
+        <div class="card-header bg-primary text-white d-flex align-items-center">
+            <i class="bi bi-box-seam-fill me-2 fs-5"></i>
+            <h4 class="mb-0">Detalles del Artículo</h4>
+        </div>
 
-<div>
-    <h4>Articulo</h4>
-    <hr />
-    <dl class="row">
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.Nombre)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.Nombre)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.Categoria)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.Categoria)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.Preciocompra)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.Preciocompra)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.Precioventa)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.Precioventa)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.Stock)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.Stock)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.Proveedor)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.Proveedor)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.Stockminimo)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.Stockminimo)
-        </dd>
-    </dl>
-</div>
-<div>
-    <a asp-action="Edit" asp-route-id="@Model?.Codigo">Edit</a> |
-    <a asp-action="Index">Back to List</a>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-bordered align-middle">
+                    <tbody>
+                        <tr>
+                            <th style="width: 30%">@Html.DisplayNameFor(model => model.Nombre)</th>
+                            <td>@Html.DisplayFor(model => model.Nombre)</td>
+                        </tr>
+                        <tr>
+                            <th>@Html.DisplayNameFor(model => model.Categoria)</th>
+                            <td>@Html.DisplayFor(model => model.Categoria)</td>
+                        </tr>
+                        <tr>
+                            <th>@Html.DisplayNameFor(model => model.Preciocompra)</th>
+                            <td>@Html.DisplayFor(model => model.Preciocompra)</td>
+                        </tr>
+                        <tr>
+                            <th>@Html.DisplayNameFor(model => model.Precioventa)</th>
+                            <td>@Html.DisplayFor(model => model.Precioventa)</td>
+                        </tr>
+                        <tr>
+                            <th>@Html.DisplayNameFor(model => model.Stock)</th>
+                            <td>
+                                @if (Model.Stock < Model.Stockminimo)
+                                {
+                                    <span class="text-danger fw-bold">@Model.Stock (Bajo)</span>
+                                }
+                                else
+                                {
+                                    <span class="text-success fw-bold">@Model.Stock</span>
+                                }
+                            </td>
+                        </tr>
+                        <tr>
+                            <th>@Html.DisplayNameFor(model => model.Proveedor)</th>
+                            <td>@Html.DisplayFor(model => model.Proveedor)</td>
+                        </tr>
+                        <tr>
+                            <th>@Html.DisplayNameFor(model => model.Stockminimo)</th>
+                            <td>@Html.DisplayFor(model => model.Stockminimo)</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="d-flex justify-content-between mt-4">
+                <a asp-action="Index" class="btn btn-outline-secondary">
+                    <i class="bi bi-arrow-left"></i> Volver
+                </a>
+                <a asp-action="Edit" asp-route-id="@Model?.Codigo" class="btn btn-primary">
+                    <i class="bi bi-pencil-square"></i> Editar
+                </a>
+            </div>
+        </div>
+    </div>
 </div>

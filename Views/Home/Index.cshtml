@@ -1,8 +1,51 @@
-﻿@{
-    ViewData["Title"] = "Home Page";
+@{
+    ViewData["Title"] = "Sistema de Inventario - Ferretería";
 }
 
-<div class="text-center">
-    <h1 class="display-4">Welcome</h1>
-    <p>Learn about <a href="https://learn.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
+<div class="container mt-5">
+    <div class="text-center mb-4">
+        <h1 class="display-5 fw-bold text-primary">🔩 Sistema de Inventario - Ferretería</h1>
+        <p class="text-muted">Gestione fácilmente los artículos, stock y proveedores de su ferretería.</p>
+    </div>
+
+    <div class="row justify-content-center">
+        <!-- Tarjeta de gestión de artículos -->
+        <div class="col-md-3">
+            <div class="card shadow-lg border-0 rounded-3">
+                <div class="card-body text-center">
+                    <i class="bi bi-box-seam display-4 text-primary"></i>
+                    <h5 class="card-title mt-3">Artículos</h5>
+                    <p class="card-text">Registrar, consultar o actualizar artículos del inventario.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tarjeta de stock -->
+        <div class="col-md-3">
+            <div class="card shadow-lg border-0 rounded-3">
+                <div class="card-body text-center">
+                    <i class="bi bi-clipboard-data display-4 text-success"></i>
+                    <h5 class="card-title mt-3">Stock</h5>
+                    <p class="card-text">Verificar niveles de inventario y alertas de stock mínimo.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tarjeta de proveedores -->
+        <div class="col-md-3">
+            <div class="card shadow-lg border-0 rounded-3">
+                <div class="card-body text-center">
+                    <i class="bi bi-truck display-4 text-warning"></i>
+                    <h5 class="card-title mt-3">Proveedores</h5>
+                    <p class="card-text">Administrar información de proveedores y contactos.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="text-center mt-5">
+        <p class="text-secondary">
+            Desarrollado por <strong>Kevin Lechon, Bryan Ortiz</strong> — Proyecto Arquitectura N-Capas con Servicios SOAP
+        </p>
+    </div>
 </div>

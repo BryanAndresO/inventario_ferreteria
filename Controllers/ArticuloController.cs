@@ -6,34 +6,35 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using inventario_ferreteria.Models;
+using inventario_ferreteria.Services.Interfaces;
 
 namespace inventario_ferreteria.Controllers
 {
     public class ArticuloController : Controller
     {
-        private readonly InventarioContext _context;
+        private readonly IServicioArticulos _servicio;
 
-        public ArticuloController(InventarioContext context)
+        public ArticuloController(IServicioArticulos servicio)
         {
-            _context = context;
+            _servicio = servicio;
         }
 
         // GET: Articulo
-        public async Task<IActionResult> Index()
+        public IActionResult Index()
         {
-            return View(await _context.Articulos.ToListAsync());
+            var lista = _servicio.BuscarPorNombre(string.Empty);
+            return View(lista);
         }
 
         // GET: Articulo/Details/5
-        public async Task<IActionResult> Details(string id)
+        public IActionResult Details(string id)
         {
             if (id == null)
             {
                 return NotFound();
             }
 
-            var articulo = await _context.Articulos
-                .FirstOrDefaultAsync(m => m.Codigo == id);
+            var articulo = _servicio.ObtenerPorCodigo(id);
             if (articulo == null)
             {
                 return NotFound();
@@ -49,108 +50,67 @@ namespace inventario_ferreteria.Controllers
         }
 
         // POST: Articulo/Create
-        // To protect from overposting attacks, enable the specific properties you want to bind to.
-        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("Codigo,Nombre,Categoria,Preciocompra,Precioventa,Stock,Proveedor,Stockminimo")] Articulo articulo)
+        public IActionResult Create([Bind("Codigo,Nombre,Categoria,Preciocompra,Precioventa,Stock,Proveedor,Stockminimo")] Articulo articulo)
         {
-            if (ModelState.IsValid)
+            if (!ModelState.IsValid)
+                return View(articulo);
+
+            var result = _servicio.RegistrarArticulo(articulo);
+            if (!result.Success)
             {
-                _context.Add(articulo);
-                await _context.SaveChangesAsync();
-                return RedirectToAction(nameof(Index));
+                ModelState.AddModelError(string.Empty, result.Message);
+                return View(articulo);
             }
-            return View(articulo);
+            return RedirectToAction(nameof(Index));
         }
 
         // GET: Articulo/Edit/5
-        public async Task<IActionResult> Edit(string id)
+        public IActionResult Edit(string id)
         {
-            if (id == null)
-            {
-                return NotFound();
-            }
-
-            var articulo = await _context.Articulos.FindAsync(id);
-            if (articulo == null)
-            {
-                return NotFound();
-            }
+            if (id == null) return NotFound();
+            var articulo = _servicio.ObtenerPorCodigo(id);
+            if (articulo == null) return NotFound();
             return View(articulo);
         }
 
         // POST: Articulo/Edit/5
-        // To protect from overposting attacks, enable the specific properties you want to bind to.
-        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(string id, [Bind("Codigo,Nombre,Categoria,Preciocompra,Precioventa,Stock,Proveedor,Stockminimo")] Articulo articulo)
+        public IActionResult Edit(string id, [Bind("Codigo,Nombre,Categoria,Preciocompra,Precioventa,Stock,Proveedor,Stockminimo")] Articulo articulo)
         {
-            if (id != articulo.Codigo)
+            if (id != articulo.Codigo) return NotFound();
+            if (!ModelState.IsValid) return View(articulo);
+            var result = _servicio.ActualizarArticulo(articulo);
+            if (!result.Success)
             {
-                return NotFound();
+                ModelState.AddModelError(string.Empty, result.Message);
+                return View(articulo);
             }
-
-            if (ModelState.IsValid)
-            {
-                try
-                {
-                    _context.Update(articulo);
-                    await _context.SaveChangesAsync();
-                }
-                catch (DbUpdateConcurrencyException)
-                {
-                    if (!ArticuloExists(articulo.Codigo))
-                    {
-                        return NotFound();
-                    }
-                    else
-                    {
-                        throw;
-                    }
-                }
-                return RedirectToAction(nameof(Index));
-            }
-            return View(articulo);
+            return RedirectToAction(nameof(Index));
         }
 
         // GET: Articulo/Delete/5
-        public async Task<IActionResult> Delete(string id)
+        public IActionResult Delete(string id)
         {
-            if (id == null)
-            {
-                return NotFound();
-            }
-
-            var articulo = await _context.Articulos
-                .FirstOrDefaultAsync(m => m.Codigo == id);
-            if (articulo == null)
-            {
-                return NotFound();
-            }
-
+            if (id == null) return NotFound();
+            var articulo = _servicio.ObtenerPorCodigo(id);
+            if (articulo == null) return NotFound();
             return View(articulo);
         }
 
         // POST: Articulo/Delete/5
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> DeleteConfirmed(string id)
+        public IActionResult DeleteConfirmed(string id)
         {
-            var articulo = await _context.Articulos.FindAsync(id);
-            if (articulo != null)
+            var deleted = _servicio.EliminarArticulo(id);
+            if (!deleted)
             {
-                _context.Articulos.Remove(articulo);
+                ModelState.AddModelError(string.Empty, "No se pudo eliminar el artículo (no encontrado).");
             }
-
-            await _context.SaveChangesAsync();
             return RedirectToAction(nameof(Index));
-        }
-
-        private bool ArticuloExists(string id)
-        {
-            return _context.Articulos.Any(e => e.Codigo == id);
         }
     }
 }

@@ -1,14 +1,18 @@
 using inventario_ferreteria.Models;
 using inventario_ferreteria.Data;
+using inventario_ferreteria.Services.Implementacion;
+using inventario_ferreteria.Services.Interfaces;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using SoapCore;
+using System.ServiceModel;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// DbContext para datos de la aplicaci�n (ya existente)
+// DbContext para datos de la aplicación (ya existente)
 builder.Services.AddDbContext<InventarioContext>(options =>
  options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
 
@@ -31,9 +35,15 @@ builder.Services.AddDefaultIdentity<IdentityUser>(options =>
  .AddDefaultTokenProviders()
  .AddDefaultUI();
 
-// A�adir soporte para controllers con vistas (MVC) y Razor Pages (Identity usa Razor Pages)
+// Añadir soporte para controllers con vistas (MVC) y Razor Pages (Identity usa Razor Pages)
 builder.Services.AddControllersWithViews();
 builder.Services.AddRazorPages();
+
+// Registrar servicios de la capa Services
+builder.Services.AddScoped<IServicioArticulos, ServicioArticulos>();
+
+// Registrar SoapCore
+builder.Services.AddSoapCore();
 
 var app = builder.Build();
 
@@ -48,15 +58,20 @@ app.UseStaticFiles();
 
 app.UseRouting();
 
-// A�ade autenticaci�n antes de autorizaci�n
+// Añade autenticación antes de autorización
 app.UseAuthentication();
 app.UseAuthorization();
 
 // Mapear rutas para controllers (MVC)
 app.MapControllerRoute(
  name: "default",
- pattern: "{controller=Home}/{action=Index}/{id?}");
+ pattern: "{controller=Home}/{action=Index}/{id?}"
+);
 
 // Mapear Razor Pages (Identity UI, etc.)
 app.MapRazorPages();
+
+// Exponer endpoint SOAP en /Service.svc usando la sobrecarga para IApplicationBuilder
+((IApplicationBuilder)app).UseSoapEndpoint<IServicioArticulos>("/Service.svc", new SoapEncoderOptions(), SoapSerializer.XmlSerializer);
+
 app.Run();

@@ -1,102 +1,104 @@
-@using Microsoft.AspNetCore.Identity
-@inject SignInManager<IdentityUser> SignInManager
-@inject UserManager<IdentityUser> UserManager
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
+using Microsoft.AspNetCore.Mvc;
+using inventario_ferreteria.Models;
+using inventario_ferreteria.Services.Interfaces;
 
-<!DOCTYPE html>
-<html lang="es">
-<head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>@ViewData["Title"] - Inventario Ferretería</title>
+namespace inventario_ferreteria.Controllers
+{
+    public class ArticuloController : Controller
+    {
+        private readonly IServicioArticulos _servicio;
 
-    <!-- Bootstrap -->
-    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+        public ArticuloController(IServicioArticulos servicio)
+        {
+            _servicio = servicio;
+        }
 
-    <!-- Bootstrap Icons -->
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+        // GET: Articulo
+        public IActionResult Index()
+        {
+            var lista = _servicio.BuscarPorNombre(string.Empty);
+            return View(lista);
+        }
 
-    <!-- Estilos propios -->
-    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
-    <link rel="stylesheet" href="~/inventario_ferreteria.styles.css" asp-append-version="true" />
-</head>
+        // GET: Articulo/Details/5
+        public IActionResult Details(string id)
+        {
+            if (id == null) return NotFound();
+            var articulo = _servicio.ObtenerPorCodigo(id);
+            if (articulo == null) return NotFound();
+            return View(articulo);
+        }
 
-<body>
-    <header>
-        <nav class="navbar navbar-expand-sm navbar-light bg-light border-bottom shadow-sm mb-3">
-            <div class="container-fluid">
-                <a class="navbar-brand fw-bold text-primary" asp-area="" asp-controller="Home" asp-action="Index">
-                    Inventario Ferretería
-                </a>
+        // GET: Articulo/Create
+        public IActionResult Create()
+        {
+            return View();
+        }
 
-                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#mainNav"
-                        aria-controls="mainNav" aria-expanded="false" aria-label="Toggle navigation">
-                    <span class="navbar-toggler-icon"></span>
-                </button>
+        // POST: Articulo/Create
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public IActionResult Create([Bind("Codigo,Nombre,Categoria,Preciocompra,Precioventa,Stock,Proveedor,Stockminimo")] Articulo articulo)
+        {
+            if (!ModelState.IsValid) return View(articulo);
+            var result = _servicio.RegistrarArticulo(articulo);
+            if (!result.Success)
+            {
+                ModelState.AddModelError(string.Empty, result.Message);
+                return View(articulo);
+            }
+            return RedirectToAction(nameof(Index));
+        }
 
-                <div id="mainNav" class="collapse navbar-collapse">
-                    <ul class="navbar-nav me-auto">
-                        <li class="nav-item">
-                            <a class="nav-link" asp-area="" asp-controller="Home" asp-action="Index">Inicio</a>
-                        </li>
+        // GET: Articulo/Edit/5
+        public IActionResult Edit(string id)
+        {
+            if (id == null) return NotFound();
+            var articulo = _servicio.ObtenerPorCodigo(id);
+            if (articulo == null) return NotFound();
+            return View(articulo);
+        }
 
-                        <li class="nav-item">
-                            <a class="nav-link" asp-area="" asp-controller="Home" asp-action="Privacy">Políticas</a>
-                        </li>
+        // POST: Articulo/Edit/5
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public IActionResult Edit(string id, [Bind("Codigo,Nombre,Categoria,Preciocompra,Precioventa,Stock,Proveedor,Stockminimo")] Articulo articulo)
+        {
+            if (id != articulo.Codigo) return NotFound();
+            if (!ModelState.IsValid) return View(articulo);
+            var result = _servicio.ActualizarArticulo(articulo);
+            if (!result.Success)
+            {
+                ModelState.AddModelError(string.Empty, result.Message);
+                return View(articulo);
+            }
+            return RedirectToAction(nameof(Index));
+        }
 
-                        @if (SignInManager.IsSignedIn(User))
-                        {
-                            <li class="nav-item">
-                                <a class="nav-link text-success" asp-area="" asp-controller="Articulo" asp-action="Index">
-                                    Artículos
-                                </a>
-                            </li>
-                        }
-                    </ul>
+        // GET: Articulo/Delete/5
+        public IActionResult Delete(string id)
+        {
+            if (id == null) return NotFound();
+            var articulo = _servicio.ObtenerPorCodigo(id);
+            if (articulo == null) return NotFound();
+            return View(articulo);
+        }
 
-                    <ul class="navbar-nav">
-                        @if (SignInManager.IsSignedIn(User))
-                        {
-                            <li class="nav-item dropdown d-flex align-items-center">
-                                <span class="text-primary fw-semibold me-3">
-                                    👋 @UserManager.GetUserName(User)
-                                </span>
-                                <form asp-area="Identity" asp-page="/Account/Logout" method="post" class="d-inline">
-                                    <button type="submit" class="btn btn-outline-danger btn-sm">Cerrar sesión</button>
-                                </form>
-                            </li>
-                        }
-                        else
-                        {
-                            <li class="nav-item">
-                                <a class="btn btn-outline-primary me-2" asp-area="Identity" asp-page="/Account/Login">Entrar</a>
-                            </li>
-                            <li class="nav-item">
-                                <a class="btn btn-primary" asp-area="Identity" asp-page="/Account/Register">Registrarse</a>
-                            </li>
-                        }
-                    </ul>
-
-                </div>
-            </div>
-        </nav>
-    </header>
-
-    <div class="container pb-4">
-        <main role="main">
-            @RenderBody()
-        </main>
-    </div>
-
-    <footer class="bg-light border-top text-center text-muted py-3 mt-auto">
-        <div class="container">
-            &copy; 2025 - Inventario Ferretería |
-            <a asp-area="" asp-controller="Home" asp-action="Privacy">Privacidad</a>
-        </div>
-    </footer>
-
-    <script src="~/lib/jquery/dist/jquery.min.js"></script>
-    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="~/js/site.js" asp-append-version="true"></script>
-    @await RenderSectionAsync("Scripts", required: false)
-</body>
-</html>
+        // POST: Articulo/Delete/5
+        [HttpPost, ActionName("Delete")]
+        [ValidateAntiForgeryToken]
+        public IActionResult DeleteConfirmed(string id)
+        {
+            var deleted = _servicio.EliminarArticulo(id);
+            if (!deleted)
+            {
+                ModelState.AddModelError(string.Empty, "No se pudo eliminar el artículo (no encontrado).");
+            }
+            return RedirectToAction(nameof(Index));
+        }
+    }
+}

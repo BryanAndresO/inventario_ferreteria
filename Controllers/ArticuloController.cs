@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Rendering;
+using Microsoft.EntityFrameworkCore;
 using inventario_ferreteria.Models;
 using inventario_ferreteria.Services.Interfaces;
 
@@ -28,8 +30,10 @@ namespace inventario_ferreteria.Controllers
         public IActionResult Details(string id)
         {
             if (id == null) return NotFound();
+
             var articulo = _servicio.ObtenerPorCodigo(id);
             if (articulo == null) return NotFound();
+
             return View(articulo);
         }
 
@@ -44,7 +48,9 @@ namespace inventario_ferreteria.Controllers
         [ValidateAntiForgeryToken]
         public IActionResult Create([Bind("Codigo,Nombre,Categoria,Preciocompra,Precioventa,Stock,Proveedor,Stockminimo")] Articulo articulo)
         {
-            if (!ModelState.IsValid) return View(articulo);
+            if (!ModelState.IsValid)
+                return View(articulo);
+
             var result = _servicio.RegistrarArticulo(articulo);
             if (!result.Success)
             {
@@ -99,6 +105,30 @@ namespace inventario_ferreteria.Controllers
                 ModelState.AddModelError(string.Empty, "No se pudo eliminar el artículo (no encontrado).");
             }
             return RedirectToAction(nameof(Index));
+        }
+
+        // NUEVAS ACCIONES PARA BÚSQUEDA
+
+        // Buscar artículos por nombre
+        [HttpGet]
+        public IActionResult BuscarPorNombre(string nombre)
+        {
+            var lista = _servicio.BuscarPorNombre(nombre ?? string.Empty);
+            return View("Index", lista); // Reutiliza la vista Index
+        }
+
+        // Buscar artículo por código
+        [HttpGet]
+        public IActionResult BuscarPorCodigo(string codigo)
+        {
+            if (string.IsNullOrEmpty(codigo))
+                return RedirectToAction(nameof(Index));
+
+            var articulo = _servicio.ObtenerPorCodigo(codigo);
+            if (articulo == null)
+                return RedirectToAction(nameof(Index));
+
+            return View("Details", articulo); // Reutiliza la vista Details
         }
     }
 }

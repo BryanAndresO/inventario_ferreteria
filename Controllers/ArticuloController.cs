@@ -1,10 +1,4 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.Rendering;
-using Microsoft.EntityFrameworkCore;
 using inventario_ferreteria.Models;
 using inventario_ferreteria.Services.Interfaces;
 
@@ -12,137 +6,123 @@ namespace inventario_ferreteria.Controllers
 {
     public class ArticuloController : Controller
     {
-        private readonly IServicioArticulos _servicio;
+        private readonly IServicioArticulos _repo;
 
-        public ArticuloController(IServicioArticulos servicio)
+        public ArticuloController(IServicioArticulos repo)
         {
-            _servicio = servicio;
+            _repo = repo;
         }
 
-        // GET: Articulo
         public IActionResult Index()
         {
-            var lista = _servicio.BuscarPorNombre(string.Empty);
+            var lista = _repo.BuscarPorNombre(string.Empty);
             return View(lista);
         }
+        // ✅ Buscar por nombre
+        [HttpGet]
+        public IActionResult BuscarPorNombre(string nombre)
+        {
+            if (string.IsNullOrWhiteSpace(nombre))
+                return RedirectToAction(nameof(Index));
 
-        // GET: Articulo/Details/5
+            var lista = _repo.BuscarPorNombre(nombre);
+
+            if (!lista.Any())
+                TempData["Mensaje"] = "No se encontraron artículos con ese nombre.";
+
+            return View("Index", lista);
+        }
+
+        // Buscar por código
+        [HttpGet]
+        public IActionResult BuscarPorCodigo(string codigo)
+        {
+            if (string.IsNullOrWhiteSpace(codigo))
+                return RedirectToAction(nameof(Index));
+
+            var articulo = _repo.ObtenerPorCodigo(codigo);
+
+            if (articulo == null)
+            {
+                TempData["Mensaje"] = "No se encontró un artículo con ese código.";
+                return RedirectToAction(nameof(Index));
+            }
+
+            // Para mantener compatibilidad con la vista Index (que espera una lista)
+            return View("Index", new List<Articulo> { articulo });
+        }
+
+
         public IActionResult Details(string id)
         {
             if (id == null) return NotFound();
-
-            var articulo = _servicio.ObtenerPorCodigo(id);
+            var articulo = _repo.ObtenerPorCodigo(id);
             if (articulo == null) return NotFound();
-
             return View(articulo);
         }
 
-        // GET: Articulo/Create
-        public IActionResult Create()
-        {
-            return View();
-        }
+        public IActionResult Create() => View();
 
-        // POST: Articulo/Create
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public IActionResult Create([Bind("Codigo,Nombre,Categoria,Preciocompra,Precioventa,Stock,Proveedor,Stockminimo")] Articulo articulo)
+        public IActionResult Create(Articulo articulo)
         {
-            if (!ModelState.IsValid)
-                return View(articulo);
+            if (!ModelState.IsValid) return View(articulo);
 
-            // Ejecutar la lógica del servicio
-            var result = _servicio.RegistrarArticulo(articulo);
+            var result = _repo.RegistrarArticulo(articulo);
 
-            // Si hay error, mostrarlo en la vista
             if (!result.Success)
             {
-                ModelState.AddModelError(string.Empty, result.Message);
+                ModelState.AddModelError("", result.Message);
                 return View(articulo);
             }
 
-            // Si fue exitoso pero con advertencia, mostrar en alerta
             TempData["Mensaje"] = result.Message;
             return RedirectToAction(nameof(Index));
         }
 
-
-        // GET: Articulo/Edit/5
         public IActionResult Edit(string id)
         {
             if (id == null) return NotFound();
-            var articulo = _servicio.ObtenerPorCodigo(id);
+            var articulo = _repo.ObtenerPorCodigo(id);
             if (articulo == null) return NotFound();
             return View(articulo);
         }
 
-        // POST: Articulo/Edit/5
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public IActionResult Edit(string id, [Bind("Codigo,Nombre,Categoria,Preciocompra,Precioventa,Stock,Proveedor,Stockminimo")] Articulo articulo)
+        public IActionResult Edit(string id, Articulo articulo)
         {
             if (id != articulo.Codigo) return NotFound();
             if (!ModelState.IsValid) return View(articulo);
 
-            var result = _servicio.ActualizarArticulo(articulo);
+            var result = _repo.ActualizarArticulo(articulo);
 
-            // Guardar mensaje en TempData para mostrarlo en Index
             TempData["Mensaje"] = result.Message;
 
             if (!result.Success)
             {
-                ModelState.AddModelError(string.Empty, result.Message);
+                ModelState.AddModelError("", result.Message);
                 return View(articulo);
             }
 
-            // Redirige a Index, donde ya se muestra el mensaje
             return RedirectToAction(nameof(Index));
         }
 
-
-        // GET: Articulo/Delete/5
         public IActionResult Delete(string id)
         {
             if (id == null) return NotFound();
-            var articulo = _servicio.ObtenerPorCodigo(id);
+            var articulo = _repo.ObtenerPorCodigo(id);
             if (articulo == null) return NotFound();
             return View(articulo);
         }
 
-        // POST: Articulo/Delete/5
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
         public IActionResult DeleteConfirmed(string id)
         {
-            var deleted = _servicio.EliminarArticulo(id);
-            if (!deleted)
-            {
-                ModelState.AddModelError(string.Empty, "No se pudo eliminar el artículo (no encontrado).");
-            }
+            _repo.EliminarArticulo(id);
             return RedirectToAction(nameof(Index));
-        }
-
-
-        // Buscar artículos por nombre
-        [HttpGet]
-        public IActionResult BuscarPorNombre(string nombre)
-        {
-            var lista = _servicio.BuscarPorNombre(nombre ?? string.Empty);
-            return View("Index", lista); // Reutiliza la vista Index
-        }
-
-        // Buscar artículo por código
-        [HttpGet]
-        public IActionResult BuscarPorCodigo(string codigo)
-        {
-            if (string.IsNullOrEmpty(codigo))
-                return RedirectToAction(nameof(Index));
-
-            var articulo = _servicio.ObtenerPorCodigo(codigo);
-            if (articulo == null)
-                return RedirectToAction(nameof(Index));
-
-            return View("Details", articulo); // Reutiliza la vista Details
         }
     }
 }

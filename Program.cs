@@ -12,35 +12,35 @@ using System.ServiceModel;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// DbContext para datos de la aplicación (ya existente)
+// DbContext para datos de la aplicación
 builder.Services.AddDbContext<InventarioContext>(options =>
- options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
+    options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
 
 // DbContext para Identity (misma base de datos)
 builder.Services.AddDbContext<ApplicationIdentityDbContext>(options =>
- options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
+    options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
 
-// Configurar Identity (relajado para desarrollo)
+// Configuración de Identity (relajada para desarrollo)
 builder.Services.AddDefaultIdentity<IdentityUser>(options =>
- {
- options.Password.RequireNonAlphanumeric = false;
- options.Password.RequireUppercase = false;
- options.Password.RequireLowercase = false;
- options.Password.RequireDigit = false;
- options.Password.RequiredLength =3;
- options.SignIn.RequireConfirmedAccount = false;
- })
- .AddRoles<IdentityRole>()
- .AddEntityFrameworkStores<ApplicationIdentityDbContext>()
- .AddDefaultTokenProviders()
- .AddDefaultUI();
+{
+    options.Password.RequireNonAlphanumeric = false;
+    options.Password.RequireUppercase = false;
+    options.Password.RequireLowercase = false;
+    options.Password.RequireDigit = false;
+    options.Password.RequiredLength = 3;
+    options.SignIn.RequireConfirmedAccount = false;
+})
+.AddRoles<IdentityRole>()
+.AddEntityFrameworkStores<ApplicationIdentityDbContext>()
+.AddDefaultTokenProviders()
+.AddDefaultUI();
 
-// Añadir soporte para controllers con vistas (MVC) y Razor Pages (Identity usa Razor Pages)
+// MVC y Razor Pages
 builder.Services.AddControllersWithViews();
 builder.Services.AddRazorPages();
 
-// Registrar servicios de la capa Services
-builder.Services.AddScoped<IServicioArticulos, ServicioArticulos>();
+// Registrar servicio del SOAP
+builder.Services.AddScoped<IServicioArticulos, ArticuloRepository>();
 
 // Registrar SoapCore
 builder.Services.AddSoapCore();
@@ -49,8 +49,8 @@ var app = builder.Build();
 
 if (!app.Environment.IsDevelopment())
 {
- app.UseExceptionHandler("/Error");
- app.UseHsts();
+    app.UseExceptionHandler("/Error");
+    app.UseHsts();
 }
 
 app.UseHttpsRedirection();
@@ -58,20 +58,34 @@ app.UseStaticFiles();
 
 app.UseRouting();
 
-// Añade autenticación antes de autorización
+// Autenticación y autorización
 app.UseAuthentication();
 app.UseAuthorization();
 
-// Mapear rutas para controllers (MVC)
+app.UseEndpoints(endpoints =>
+{
+    endpoints.UseSoapEndpoint<IServicioArticulos>(
+        "/Service.svc",
+        new SoapEncoderOptions(),
+        SoapSerializer.XmlSerializer
+    );
+
+    endpoints.MapControllerRoute(
+        name: "default",
+        pattern: "{controller=Home}/{action=Index}/{id?}"
+    );
+
+    endpoints.MapRazorPages();
+});
+
+
+// Rutas MVC
 app.MapControllerRoute(
- name: "default",
- pattern: "{controller=Home}/{action=Index}/{id?}"
+    name: "default",
+    pattern: "{controller=Home}/{action=Index}/{id?}"
 );
 
-// Mapear Razor Pages (Identity UI, etc.)
+// Rutas Identity
 app.MapRazorPages();
-
-// Exponer endpoint SOAP en /Service.svc usando la sobrecarga para IApplicationBuilder
-((IApplicationBuilder)app).UseSoapEndpoint<IServicioArticulos>("/Service.svc", new SoapEncoderOptions(), SoapSerializer.XmlSerializer);
 
 app.Run();

@@ -51,14 +51,21 @@ namespace inventario_ferreteria.Controllers
             if (!ModelState.IsValid)
                 return View(articulo);
 
+            // Ejecutar la lógica del servicio
             var result = _servicio.RegistrarArticulo(articulo);
+
+            // Si hay error, mostrarlo en la vista
             if (!result.Success)
             {
                 ModelState.AddModelError(string.Empty, result.Message);
                 return View(articulo);
             }
+
+            // Si fue exitoso pero con advertencia, mostrar en alerta
+            TempData["Mensaje"] = result.Message;
             return RedirectToAction(nameof(Index));
         }
+
 
         // GET: Articulo/Edit/5
         public IActionResult Edit(string id)
@@ -76,14 +83,22 @@ namespace inventario_ferreteria.Controllers
         {
             if (id != articulo.Codigo) return NotFound();
             if (!ModelState.IsValid) return View(articulo);
+
             var result = _servicio.ActualizarArticulo(articulo);
+
+            // Guardar mensaje en TempData para mostrarlo en Index
+            TempData["Mensaje"] = result.Message;
+
             if (!result.Success)
             {
                 ModelState.AddModelError(string.Empty, result.Message);
                 return View(articulo);
             }
+
+            // Redirige a Index, donde ya se muestra el mensaje
             return RedirectToAction(nameof(Index));
         }
+
 
         // GET: Articulo/Delete/5
         public IActionResult Delete(string id)
@@ -107,7 +122,6 @@ namespace inventario_ferreteria.Controllers
             return RedirectToAction(nameof(Index));
         }
 
-        // NUEVAS ACCIONES PARA BÚSQUEDA
 
         // Buscar artículos por nombre
         [HttpGet]

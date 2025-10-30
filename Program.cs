@@ -43,6 +43,7 @@ builder.Services.AddControllersWithViews();
 builder.Services.AddRazorPages();
 
 // Registrar servicio SOAP
+builder.Services.AddLogging();
 builder.Services.AddScoped<IServicioArticulos, ArticuloRepository>();
 builder.Services.AddSoapCore();
 
@@ -54,7 +55,7 @@ if (!app.Environment.IsDevelopment())
     app.UseHsts();
 }
 
-app.UseHttpsRedirection();
+// app.UseHttpsRedirection();
 app.UseStaticFiles();
 app.UseRouting();
 app.UseAuthentication();

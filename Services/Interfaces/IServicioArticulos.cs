@@ -7,12 +7,15 @@ namespace inventario_ferreteria.Services.Interfaces
  [ServiceContract]
  public interface IServicioArticulos
  {
- // Operaciones usadas por la aplicación
+ // Operaciones usadas por la aplicaciï¿½n
  ArticuloRegistrarResult RegistrarArticulo(Articulo articulo);
  ArticuloActualizarResult ActualizarArticulo(Articulo articulo);
  Articulo? ObtenerPorCodigo(string codigo);
  IEnumerable<Articulo> BuscarPorNombre(string nombre);
  bool EliminarArticulo(string codigo);
+ IEnumerable<Articulo> ObtenerArticulosConStockBajo();
+ int ContarTotalArticulos();
+ decimal CalcularValorTotalInventario();
 
  // Operaciones expuestas por SOAP
  [OperationContract]

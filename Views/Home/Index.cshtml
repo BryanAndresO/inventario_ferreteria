@@ -1,40 +1,56 @@
+@using Microsoft.AspNetCore.Identity
+@inject SignInManager<IdentityUser> SignInManager
+@inject UserManager<IdentityUser> UserManager
+
 @{
     ViewData["Title"] = "Sistema de Inventario - Ferretería";
 }
 
 <div class="container mt-5">
     <div class="text-center mb-4">
-        <h1 class="display-5 fw-bold text-primary">🔩 Sistema de Inventario - Ferretería</h1>
-        <p class="text-muted">Gestione fácilmente los artículos, stock y proveedores de su ferretería.</p>
+        @if (SignInManager.IsSignedIn(User))
+        {
+            <h1 class="display-5 fw-bold text-primary">¡Bienvenido, @UserManager.GetUserName(User)!</h1>
+            <p class="text-muted">Aquí tienes un resumen de tu inventario.</p>
+        }
+        else
+        {
+            <h1 class="display-5 fw-bold text-primary">🔩 Sistema de Inventario - Ferretería</h1>
+            <p class="text-muted">Gestione fácilmente los artículos, stock y proveedores de su ferretería.</p>
+        }
     </div>
 
 
     <div class="row justify-content-center">
         <!-- Tarjeta de gestión de artículos -->
         <div class="col-md-3">
-            <div class="card shadow-lg border-0 rounded-3">
-                <div class="card-body text-center">
-                    <i class="bi bi-box-seam display-4 text-primary"></i>
-                    <h5 class="card-title mt-3">Artículos</h5>
-                    <p class="card-text">Registrar, consultar o actualizar artículos del inventario.</p>
+            <a asp-controller="Articulo" asp-action="Index" class="card-link text-decoration-none">
+                <div class="card shadow-lg border-0 rounded-3 h-100">
+                    <div class="card-body text-center">
+                        <i class="bi bi-box-seam display-4 text-primary"></i>
+                        <h5 class="card-title mt-3">Artículos</h5>
+                        <p class="card-text">Registrar, consultar o actualizar artículos del inventario.</p>
+                    </div>
                 </div>
-            </div>
+            </a>
         </div>
 
         <!-- Tarjeta de stock -->
         <div class="col-md-3">
-            <div class="card shadow-lg border-0 rounded-3">
-                <div class="card-body text-center">
-                    <i class="bi bi-clipboard-data display-4 text-success"></i>
-                    <h5 class="card-title mt-3">Stock</h5>
-                    <p class="card-text">Verificar niveles de inventario y alertas de stock mínimo.</p>
+            <a asp-controller="Articulo" asp-action="StockBajo" class="card-link text-decoration-none">
+                <div class="card shadow-lg border-0 rounded-3 h-100">
+                    <div class="card-body text-center">
+                        <i class="bi bi-clipboard-data display-4 text-success"></i>
+                        <h5 class="card-title mt-3">Stock</h5>
+                        <p class="card-text">Verificar niveles de inventario y alertas de stock mínimo.</p>
+                    </div>
                 </div>
-            </div>
+            </a>
         </div>
 
         <!-- Tarjeta de proveedores -->
         <div class="col-md-3">
-            <div class="card shadow-lg border-0 rounded-3">
+            <div class="card shadow-lg border-0 rounded-3 h-100">
                 <div class="card-body text-center">
                     <i class="bi bi-truck display-4 text-warning"></i>
                     <h5 class="card-title mt-3">Proveedores</h5>

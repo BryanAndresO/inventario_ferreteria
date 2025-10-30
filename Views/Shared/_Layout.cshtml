@@ -10,13 +10,14 @@
     <title>@ViewData["Title"] - Inventario Ferretería</title>
 
     <!-- Bootstrap -->
-    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="https://bootswatch.com/5/lux/bootstrap.min.css" />
 
     <!-- Bootstrap Icons -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
 
     <!-- Estilos propios -->
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/custom.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/inventario_ferreteria.styles.css" asp-append-version="true" />
 </head>
 <body>
@@ -47,6 +48,11 @@
                             <li class="nav-item">
                                 <a class="nav-link text-success" asp-area="" asp-controller="Articulo" asp-action="Index">
                                     Artículos
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link text-danger fw-bold" asp-area="" asp-controller="Articulo" asp-action="StockBajo">
+                                    <i class="bi bi-exclamation-triangle-fill"></i> Stock Bajo
                                 </a>
                             </li>
                         }

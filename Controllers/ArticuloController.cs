@@ -1,9 +1,11 @@
 using Microsoft.AspNetCore.Mvc;
 using inventario_ferreteria.Models;
 using inventario_ferreteria.Services.Interfaces;
+using Microsoft.AspNetCore.Authorization;
 
 namespace inventario_ferreteria.Controllers
 {
+    [Authorize]
     public class ArticuloController : Controller
     {
         private readonly IServicioArticulos _repo;
@@ -16,6 +18,12 @@ namespace inventario_ferreteria.Controllers
         public IActionResult Index()
         {
             var lista = _repo.BuscarPorNombre(string.Empty);
+            return View(lista);
+        }
+
+        public IActionResult StockBajo()
+        {
+            var lista = _repo.ObtenerArticulosConStockBajo();
             return View(lista);
         }
         // ✅ Buscar por nombre

@@ -12,15 +12,18 @@ using System.ServiceModel;
 
 var builder = WebApplication.CreateBuilder(args);
 
+// Escuchar en todas las IP en el puerto 7208 (HTTP)
+builder.WebHost.UseUrls("http://0.0.0.0:7208");
+
 // DbContext para datos de la aplicación
 builder.Services.AddDbContext<InventarioContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
 
-// DbContext para Identity (misma base de datos)
+// DbContext para Identity
 builder.Services.AddDbContext<ApplicationIdentityDbContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
 
-// Configuración de Identity (relajada para desarrollo)
+// Configuración de Identity
 builder.Services.AddDefaultIdentity<IdentityUser>(options =>
 {
     options.Password.RequireNonAlphanumeric = false;
@@ -39,10 +42,8 @@ builder.Services.AddDefaultIdentity<IdentityUser>(options =>
 builder.Services.AddControllersWithViews();
 builder.Services.AddRazorPages();
 
-// Registrar servicio del SOAP
+// Registrar servicio SOAP
 builder.Services.AddScoped<IServicioArticulos, ArticuloRepository>();
-
-// Registrar SoapCore
 builder.Services.AddSoapCore();
 
 var app = builder.Build();
@@ -55,13 +56,11 @@ if (!app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 app.UseStaticFiles();
-
 app.UseRouting();
-
-// Autenticación y autorización
 app.UseAuthentication();
 app.UseAuthorization();
 
+// Registrar endpoint SOAP
 app.UseEndpoints(endpoints =>
 {
     endpoints.UseSoapEndpoint<IServicioArticulos>(
@@ -77,15 +76,5 @@ app.UseEndpoints(endpoints =>
 
     endpoints.MapRazorPages();
 });
-
-
-// Rutas MVC
-app.MapControllerRoute(
-    name: "default",
-    pattern: "{controller=Home}/{action=Index}/{id?}"
-);
-
-// Rutas Identity
-app.MapRazorPages();
 
 app.Run();

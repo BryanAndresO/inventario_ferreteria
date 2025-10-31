@@ -30,7 +30,10 @@
                     if (articulo.Precioventa <= articulo.Preciocompra)
                         return (false, "El precio de venta debe ser mayor que el precio de compra.");
 
-                    if (articulo.Stock < articulo.Stockminimo)
+                    if (articulo.Stockminimo.HasValue && articulo.Stockminimo < 0)
+                        return (false, "El stock mínimo no puede ser un valor negativo.");
+
+                    if (articulo.Stockminimo.HasValue && articulo.Stock < articulo.Stockminimo.Value)
                         return (false, "El stock no puede ser menor que el stock mínimo permitido.");
 
                     return (true, string.Empty);
